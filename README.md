@@ -256,7 +256,7 @@ To delete the application that you created, use the AWS CLI. Assuming you used y
 You can also destroy the stack using:
 
 ```bash
-💥 aws cloudformation delete-stack --stack-name etcauthapp-dev
+💥 aws cloudformation delete-stack --stack-name testapp-dev
 ```
 
 ## Resources
