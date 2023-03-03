@@ -1,0 +1,9 @@
+node_modules
+.aws-sam/
+.DS_Store
+
+.idea/
+.vscode/
+.nova/
+coverage
+build

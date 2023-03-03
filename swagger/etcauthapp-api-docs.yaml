@@ -1,0 +1,118 @@
+openapi: 3.0.0
+info:
+  description: example.contracts.Api
+  version: 4.4-oas3
+  title: testapp API
+paths:
+  /login:
+    get:
+      summary: login to the system
+      description: protected page
+      security:
+        - jwtAuth: [ ]
+      responses:
+        '200':
+          description: Success Response
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/success'
+components:
+  responses:
+    '204':
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/204'
+    '403':
+      description: Unauthorized Error 403
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/E403'
+    '404':
+      description: not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/404'   
+  securitySchemes:
+    jwtAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        userId:
+          type: string
+        primaryUser:
+          type: object
+          properties:
+            name:
+              type: string
+            avatarUrl:
+              type: string
+            motionNotificationsDisabled:
+              type: boolean
+            primaryDevice:
+              $ref: '#/components/schemas/Device'
+        household:
+          type: object
+          properties:
+            id:
+              type: string
+    E403:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 403
+    '204':
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 204
+    '404':
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 404
+    Device:
+      type: object
+      properties:
+        name:
+          type: string
+        macAddress:
+          type: string
+        vendor:
+          type: string
+    pushToken:
+      type: object
+      properties:
+        name:
+          title: The device name
+          type: string
+        type:
+          title: The device type (either `ios` or `android`)
+          type: string
+          enum:
+            - ios
+            - android
+        token:
+          title: The device's push token
+          type: string
+    success:
+      type: object
+      properties:
+        success:
+          title: success status
+          type: boolean

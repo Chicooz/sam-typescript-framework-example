@@ -1,0 +1,185 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description:  Authorized API
+
+Parameters:
+  EnvironmentType:
+    Description: The environment type
+    Type: String
+    Default: Dev
+    AllowedValues:
+      - Dev
+      - Prod
+    ConstraintDescription: Must specify either 'Dev' or 'Prod'. Default is 'Dev'.
+
+Globals:
+  Function:
+    Tracing: Active
+    Runtime: nodejs16.x
+    Architectures:
+      - arm64
+    MemorySize: 512
+    Timeout: 30
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref EnvironmentType
+  Api:
+    TracingEnabled: True
+
+Resources:
+  Auth:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: Auth
+      Handler: src/handlers/authorize.handler
+      Runtime: nodejs16.x
+      Timeout: 15
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - src/handlers/authorize.ts
+
+  LambdaAuthInvokeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/service-role/"
+      Policies:
+        - PolicyName: AuthInvoke
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt Auth.Arn
+
+  ExampleApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref EnvironmentType
+      Auth:
+        Authorizers:
+          Auth:
+            FunctionInvokeRole: !GetAtt LambdaAuthInvokeRole.Arn
+            FunctionArn: !GetAtt Auth.Arn
+            IdentitySource: "$request.header.Authorization"
+            FunctionPayloadType: TOKEN
+
+  # auth
+  Authorization:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/authenticate.handler
+      Events:
+        RestAuthGet:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: Auth
+            Path: "/login"
+            Method: get
+            RestApiId: !Ref ExampleApi
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - src/handlers/authenticate.ts
+
+# contracts
+  addContract:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/authenticate.handler
+      Events:
+        RestAuthGet:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: Auth
+            Path: "/createContract"
+            Method: post
+            RestApiId: !Ref ExampleApi
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - src/handlers/authenticate.ts
+
+  # $default route used as catchall
+  CatchAllLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/all.handler
+      Events:
+        RestCatchAll:
+          Type: Api
+          Properties:
+            Path: /{all+}
+            Method: get
+            RestApiId: !Ref ExampleApi
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "Users-${EnvironmentType}"
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+        - AttributeName: username
+          AttributeType: S
+        - AttributeName: authToken
+          AttributeType: S
+      GlobalSecondaryIndexes:
+        - IndexName: usernameIndex
+          KeySchema:
+            - AttributeName: username
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: authTokenIndex
+          KeySchema:
+            - AttributeName: authToken
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  ContractsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "Contracts-${EnvironmentType}"
+      KeySchema:
+        - AttributeName: contractId
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: contractId
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+Outputs:
+  RestApiEndpoint:
+    Description: "Rest API endpoint URL"
+    Value: !Sub "https://${ExampleApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType}"
