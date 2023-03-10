@@ -5,20 +5,110 @@ info:
   title: testapp API
 paths:
   /login:
-    get:
-      summary: login to the system
-      description: protected page
-      security:
-        - jwtAuth: [ ]
+    post:
+      summary: Authenticates a user
+      description: Exchanges user name password for a signed JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
       responses:
         '200':
-          description: Success Response
+          description: The signed JWT
           content:
             application/json:
               schema:
                 type: object
+                properties:
+                  token:
+                    type: string
+                  userId:
+                    type: string
+        '401':
+          description: Invalid Authentication Details
+  /createContract:
+    post:
+      summary: Create new contract
+      description: Create new contract endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contractName:
+                  type: string
+                templateID:
+                  type: string
+      responses:
+        '200':
+          description: The signed JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ContractID:
+                    type: string
+  /getContract:
+    get:
+      summary: Retrieves contract by id 
+      description: Get Contract endpoint
+      parameters:
+        - $ref: '#/components/parameters/contractID'
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userID:
+                    type: string
+                  contractName:
+                    type: string
+                  templateID:
+                    type: string
+                  contractID:
+                    type: string
+        '204':
+          $ref: '#/components/responses/204'
+        '403':
+          $ref: '#/components/responses/403'
+  /getContractIDs:
+    get:
+      summary: Retrieves All contracts ids 
+      description: Get ContractIDs endpoint
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
                 items:
-                  $ref: '#/components/schemas/success'
+                  type: object
+                  properties:
+                    contractID:
+                      type: string
+        '204':
+          $ref: '#/components/responses/204'
+        '403':
+          $ref: '#/components/responses/403'
+ 
 components:
   responses:
     '204':
@@ -45,29 +135,6 @@ components:
       in: header
       name: Authorization
   schemas:
-    User:
-      type: object
-      properties:
-        username:
-          type: string
-        userId:
-          type: string
-        primaryUser:
-          type: object
-          properties:
-            name:
-              type: string
-            avatarUrl:
-              type: string
-            motionNotificationsDisabled:
-              type: boolean
-            primaryDevice:
-              $ref: '#/components/schemas/Device'
-        household:
-          type: object
-          properties:
-            id:
-              type: string
     E403:
       type: object
       properties:
@@ -86,33 +153,10 @@ components:
         statusCode:
           type: number
           example: 404
-    Device:
-      type: object
-      properties:
-        name:
-          type: string
-        macAddress:
-          type: string
-        vendor:
-          type: string
-    pushToken:
-      type: object
-      properties:
-        name:
-          title: The device name
-          type: string
-        type:
-          title: The device type (either `ios` or `android`)
-          type: string
-          enum:
-            - ios
-            - android
-        token:
-          title: The device's push token
-          type: string
-    success:
-      type: object
-      properties:
-        success:
-          title: success status
-          type: boolean
+  parameters:
+    contractID:
+      in: query
+      required: true
+      name: contractID
+      schema:
+        type: string

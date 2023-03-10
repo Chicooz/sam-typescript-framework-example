@@ -38,7 +38,7 @@ jobs:
         run: npm install -g @apidevtools/swagger-cli
 
       - name: Validate Swagger API Definitions
-        run: swagger-cli validate swagger/etcauthapp-api-docs.yaml
+        run: swagger-cli validate swagger/exampleapp-api-docs.yaml
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3

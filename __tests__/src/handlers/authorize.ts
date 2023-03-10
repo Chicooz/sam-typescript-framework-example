@@ -52,7 +52,7 @@ describe("Testing Authorization", () => {
             expect(err).toEqual("Unauthorized");
         });
     });
-    it("should return Unauthorized error if user is not authorized", async () => {
+    it("should return Unauthorized error if an error occured", async () => {
         when(authoriser.isAuthorised()).thenReject();
         const response = await lambda.handler(event, context, function (err, auth) {
             expect(err).toEqual("Unauthorized");
