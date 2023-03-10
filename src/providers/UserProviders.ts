@@ -2,7 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
     DynamoDBDocumentClient,
     GetCommand,
-    ScanCommand,
+    QueryCommand,
     UpdateCommand,
     UpdateCommandInput,
 } from "@aws-sdk/lib-dynamodb";
@@ -40,7 +40,7 @@ export class DatabaseUserDataProvider {
         const params = {
             TableName: this.tableName,
             Key: {
-                UserId: userId,
+                userId: userId,
             },
         };
         const user = (await this.ddb.send(new GetCommand(params)))?.Item;
@@ -54,40 +54,49 @@ export class DatabaseUserDataProvider {
     async byUsername(username: string): Promise<User> {
         const params = {
             TableName: this.tableName,
-            Key: {
-                Username: username,
+            IndexName: "usernameIndex",
+            KeyConditionExpression: "username = :name",
+            ExpressionAttributeValues: {
+                ":name": username,
             },
+            ProjectionExpression: "userId, username, password",
         };
-        const user = (await this.ddb.send(new GetCommand(params)))?.Item;
+        const user = (await this.ddb.send(new QueryCommand(params)))?.Items;
 
         if (!user) {
             throw new Error(`Username: '${username}' not found`);
         }
 
-        return user as User;
+        return user[0] as User;
     }
-    async byToken(token: string): Promise<User> {
+    async byToken(token: string): Promise<User | void> {
         const params = {
             TableName: this.tableName,
-            Key: {
-                AuthToken: token,
+            IndexName: "authTokenIndex",
+            KeyConditionExpression: "authToken = :name",
+            ExpressionAttributeValues: {
+                ":name": token,
             },
+            ProjectionExpression: "userId, username, password, authToken",
         };
-        const user = (await this.ddb.send(new GetCommand(params)))?.Item;
-
-        if (!user) {
-            throw new Error(`AuthToken: '${token}' not found`);
+        try{
+            const dbResult = (await this.ddb.send(new QueryCommand(params)));
+            if (!dbResult || !dbResult?.Items?.length) {
+                throw new Error(`Token: '${token}' not found`);
+            }
+            return dbResult.Items[0] as User;    
+        }catch(e){
+            const error = e as Error;
+            console.log(error.message);
         }
-
-        return user as User;
     }
     async updateToken(userId: string, token: string) {
         const params: UpdateCommandInput = {
             TableName: this.tableName,
             Key: {
-                UserId: userId,
+                userId: userId,
             },
-            UpdateExpression: "set AuthToken = :token",
+            UpdateExpression: "set authToken = :token",
             ExpressionAttributeValues: {
                 ":token": token,
             },

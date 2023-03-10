@@ -10,6 +10,7 @@ describe("Testing Authorization", () => {
         methodArn: "",
         authorizationToken: "1234",
     };
+    const principalId= "8314138c-ffb3-4b19-963b-b4f4748f817e";
     const authoriser: IAuthoriser = mock(Authoriser);
     const context = {
         callbackWaitsForEmptyEventLoop: false,
@@ -38,9 +39,17 @@ describe("Testing Authorization", () => {
     });
 
     it("should attach principal data if user is authorized", async () => {
-        when(authoriser.isAuthorised()).thenResolve(true);
+        when(authoriser.isAuthorised()).thenResolve(principalId);
         const response = await lambda.handler(event, context, function (err, auth) {
-            expect(err).toEqual(undefined);
+            expect(err).toEqual(null);
+            expect(auth?.principalId).toEqual(principalId);
+        });
+    });
+
+    it("should return Unauthorized error if user is not authorized", async () => {
+        when(authoriser.isAuthorised()).thenResolve(false);
+        const response = await lambda.handler(event, context, function (err, auth) {
+            expect(err).toEqual("Unauthorized");
         });
     });
     it("should return Unauthorized error if user is not authorized", async () => {
@@ -48,5 +57,5 @@ describe("Testing Authorization", () => {
         const response = await lambda.handler(event, context, function (err, auth) {
             expect(err).toEqual("Unauthorized");
         });
-    });
+    });   
 });

@@ -34,6 +34,9 @@ Resources:
       Handler: src/handlers/authorize.handler
       Runtime: nodejs16.x
       Timeout: 15
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "Users-${EnvironmentType}"
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -82,14 +85,15 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/authenticate.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "Users-${EnvironmentType}"
       Events:
         RestAuthGet:
           Type: Api
           Properties:
-            Auth:
-              Authorizer: Auth
             Path: "/login"
-            Method: get
+            Method: post
             RestApiId: !Ref ExampleApi
     Metadata:
       BuildMethod: esbuild
@@ -103,7 +107,7 @@ Resources:
   addContract:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/authenticate.handler
+      Handler: src/handlers/all.handler
       Events:
         RestAuthGet:
           Type: Api
@@ -113,13 +117,13 @@ Resources:
             Path: "/createContract"
             Method: post
             RestApiId: !Ref ExampleApi
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/authenticate.ts
+    # Metadata:
+    #   BuildMethod: esbuild
+    #   BuildProperties:
+    #     Minify: true
+    #     Target: "es2020"
+    #     EntryPoints:
+    #       - src/handlers/addContractr.ts
 
   # $default route used as catchall
   CatchAllLambdaFunction:

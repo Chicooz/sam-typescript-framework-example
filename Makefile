@@ -1,11 +1,10 @@
-DEV_STACK_NAME = etcauthapp-dev
-PROD_STACK_NAME = etcauthapp-prod
-DEV_S3_BUCKET_NAME = etcauthapp-user-avatars-dev
-PROD_S3_BUCKET_NAME = etcauthapp-user-avatars-prod
-DEV_ISSUER_URL = https://dev-bt.uk.auth0.com/
-DEV_AUDIENCE_URL= http://127.0.0.1/
+DEV_STACK_NAME = exampleapp-dev
+PROD_STACK_NAME = exampleapp-prod
+DEV_S3_BUCKET_NAME = exampleapp-user-avatars-dev
+PROD_S3_BUCKET_NAME = exampleapp-user-avatars-prod
+
 validate:
-	sam validate && swagger-cli validate swagger/etcauthapp-api-docs.yaml
+	sam validate && swagger-cli validate swagger/exampleapp-api-docs.yaml
 
 build:
 	sam build --cached --parallel --beta-features
@@ -17,15 +16,13 @@ start-local-dev: build
 	sam local start-api \
 		--parameter-overrides \
 			EnvironmentType=Dev \
-			ParameterPrefix=etcauthapp \
-			IssuerUrl=${DEV_ISSUER_URL}\
-			APIAudience=${DEV_AUDIENCE_URL}\
+			ParameterPrefix=exampleapp \
 
 start-local-prod: build
 	sam local start-api \
 		--parameter-overrides \
 			EnvironmentType=Prod \
-			ParameterPrefix=etcauthapp
+			ParameterPrefix=exampleapp
 
 invoke: build
 	sam local invoke
@@ -42,10 +39,8 @@ deploy-dev: build
 		--capabilities CAPABILITY_IAM \
 		--parameter-overrides \
 			EnvironmentType=Dev \
-			IssuerUrl=${DEV_ISSUER_URL}\
-			APIAudience=${DEV_AUDIENCE_URL}\
 			S3BucketName=$(DEV_S3_BUCKET_NAME) \
-			ParameterPrefix=etcauthapp
+			ParameterPrefix=exampleapp
 
 deploy-prod: build
 		sam deploy \
@@ -57,7 +52,7 @@ deploy-prod: build
 			--parameter-overrides \
 				EnvironmentType=Prod \
 				S3BucketName=$(PROD_S3_BUCKET_NAME) \
-				ParameterPrefix=etcauthapp
+				ParameterPrefix=exampleapp
 
 destroy-dev:
 	aws cloudformation delete-stack \
@@ -92,23 +87,6 @@ dev-logs:
 prod-logs:
 	sam logs --stack-name $(PROD_STACK_NAME) --tail
 
-get-users-dev:
-	src/local/table-scripts/get-all-users.sh Dev
-
-get-users-prod:
-	src/local/table-scripts/get-all-users.sh Prod
 
 insert-user:
-	node src/local/table-scripts/insert-user.js
-
-delete-user:
-	node src/local/table-scripts/delete-user.js
-
-reset-password:
-	node src/local/table-scripts/reset-password.js
-
-revoke-token:
-	node src/local/table-scripts/revoke-token.js
-
-reset-user:
-	node src/local/table-scripts/reset-user.js
+	node src/local/insert-user.js

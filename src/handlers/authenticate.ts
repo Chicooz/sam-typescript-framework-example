@@ -24,11 +24,14 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         const token = await useCase.init(requestBody).operate();
         return new Success(token);
     } catch (e) {
+        const error = e as Error;
+
+        console.log( error.message)
         return new NotAuthorised(e as Error);
     }
 };
 
 export interface AuthenticateBody {
-    email?: string;
+    username?: string;
     password?: string;
 }

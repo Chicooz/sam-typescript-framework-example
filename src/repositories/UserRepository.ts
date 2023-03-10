@@ -13,7 +13,7 @@ export class UserRepository {
     async updateUserToken(userId: string, token: string): Promise<UpdateCommandOutput> {
         return this.databaseUserProvider.updateToken(userId, token);
     }
-    async getUserByToken(token: string): Promise<User> {
+    async getUserByToken(token: string): Promise<User | void> {
         return this.databaseUserProvider.byToken(token);
     }
 }

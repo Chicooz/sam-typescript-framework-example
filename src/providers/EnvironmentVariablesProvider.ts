@@ -1,9 +1,9 @@
 export class EnvironmentVariablesProvider {
     getUsersTableName(): string {
-        return 'Users-' + process.env.EnvironmentType;
+        return 'Users-' + process.env.ENVIRONMENT;
     }
     getContractsTableName(): string {
-        return 'Contracts-' + process.env.EnvironmentType;
+        return 'Contracts-' + process.env.ENVIRONMENT;
     }
     
 }

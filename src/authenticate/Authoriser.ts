@@ -20,7 +20,7 @@ export class Authoriser implements IAuthoriser {
         }
         return match[1];
     }
-    async isAuthorised(): Promise<boolean> {
+    async isAuthorised(): Promise<string | boolean> {
         try {
             const token = await this.getToken();
             const user = await this.repository.getUserByToken(token);
@@ -28,12 +28,11 @@ export class Authoriser implements IAuthoriser {
                 return false;
             }
             const jwtProvider = new JWTProvider(user.password);
-            const verifiedToken = await jwtProvider.verify(token);
-            if (typeof verifiedToken === "string") {
-                return false;
-            } else {
-                return verifiedToken.email === user.username && verifiedToken.userId === user.userId;
+            const verifiedToken = await jwtProvider.verifySynchronously(token);
+            if(typeof verifiedToken === "string" || verifiedToken.email !== user.username || verifiedToken.userId !== user.userId) {
+                return false;        
             }
+            return user.userId;    
         } catch (e) {
             const error = e as Error;
             console.log("returning false due to error " + error.message);
@@ -43,5 +42,5 @@ export class Authoriser implements IAuthoriser {
 }
 
 export interface IAuthoriser {
-    isAuthorised(): Promise<boolean>;
+    isAuthorised(): Promise<string | boolean>;
 }

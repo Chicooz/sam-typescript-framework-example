@@ -17,15 +17,14 @@ export class AuthenticateUserUseCase extends UseCase<string | null> {
     }
 
     async operate(): Promise<string | null> {
-        if (!this.user || !this.user.email || !this.user.password) {
+        if (!this.user || !this.user.username || !this.user.password) {
             throw new Error("Invalid Request");
         }
-        const dbUser = await this.userRepository.getUserByUsername(this.user.email);
+        const dbUser = await this.userRepository.getUserByUsername(this.user.username);
         const isPasswordCorrect = await this.passwordProvider.isCorrectPassword(this.user.password, dbUser.password);
         if (isPasswordCorrect) {
             const jWTProvider = new JWTProvider(dbUser.password);
-            const token = await jWTProvider.signSynchronously(dbUser.username, dbUser.userId);
-            console.log("token is: " + token);
+            const token = await jWTProvider.sign(dbUser.username, dbUser.userId);
             await this.userRepository.updateUserToken(dbUser.userId, token);
             return token;
         } else {
