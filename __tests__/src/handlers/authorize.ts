@@ -39,7 +39,7 @@ describe("Testing Authorization", () => {
     });
 
     it("should attach principal data if user is authorized", async () => {
-        when(authoriser.isAuthorised()).thenResolve(principalId);
+        when(authoriser.userAuthorized()).thenResolve(principalId);
         const response = await lambda.handler(event, context, function (err, auth) {
             expect(err).toEqual(null);
             expect(auth?.principalId).toEqual(principalId);
@@ -47,13 +47,13 @@ describe("Testing Authorization", () => {
     });
 
     it("should return Unauthorized error if user is not authorized", async () => {
-        when(authoriser.isAuthorised()).thenResolve(false);
+        when(authoriser.userAuthorized()).thenThrow(new Error("Unauthorized"));
         const response = await lambda.handler(event, context, function (err, auth) {
             expect(err).toEqual("Unauthorized");
         });
     });
     it("should return Unauthorized error if an error occured", async () => {
-        when(authoriser.isAuthorised()).thenReject();
+        when(authoriser.userAuthorized()).thenThrow(new Error("Unauthorized"));
         const response = await lambda.handler(event, context, function (err, auth) {
             expect(err).toEqual("Unauthorized");
         });

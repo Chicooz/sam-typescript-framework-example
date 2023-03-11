@@ -2,7 +2,7 @@ export class NotAuthorised implements Response<null> {
     readonly statusCode: number = 403;
     readonly body: string;
     constructor(e: Error) {
-        console.log(`Responding with ${this.statusCode} due to error [${e}: ${e.message}]`, e.stack);
+        console.log(`Responding with ${this.statusCode} due to error [${e}: ${e.message}]`);
         this.body = e.message;
     }
 }
@@ -15,8 +15,7 @@ export class ServerError<Type> implements Response<Type | null> {
     constructor(e: Error) {
         this.error = e;
         console.log(
-            `Responding with ${this.statusCode} due to error [${this.error}: ${this.error.message}]`,
-            this.error.stack,
+            `Responding with ${this.statusCode} due to error [${this.error}: ${this.error.message}]`
         );
         this.body = this.error.message;
     }

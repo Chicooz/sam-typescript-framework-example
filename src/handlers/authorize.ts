@@ -18,12 +18,8 @@ export const handler = async (
         const environmentVariablesProvider = new EnvironmentVariablesProvider();
         const databaseUserProvider = new DatabaseUserDataProvider(environmentVariablesProvider);
         const repository = new UserRepository(databaseUserProvider);
-        const userId = await authoriser.init(event, repository).isAuthorised();
-        if (typeof userId == 'string') {
+        const userId = await authoriser.init(event, repository).userAuthorized();
             callback(null, generatePolicy(userId, 'Allow', event.methodArn));
-        } else {
-            callback("Unauthorized");
-        }
     } catch (e) {
         const error = e as Error;
         console.log("returning unauthorized due to error: " + error.message);

@@ -29,8 +29,6 @@ paths:
                 properties:
                   token:
                     type: string
-                  userId:
-                    type: string
         '401':
           description: Invalid Authentication Details
   /createContract:

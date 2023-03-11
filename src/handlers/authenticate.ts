@@ -25,8 +25,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         return new Success({token});
     } catch (e) {
         const error = e as Error;
-
-        console.log( error.message)
         return new NotAuthorised(e as Error);
     }
 };
