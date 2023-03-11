@@ -1,5 +1,5 @@
 import { UpdateCommandOutput } from "@aws-sdk/lib-dynamodb";
-import { DatabaseUserDataProvider, User } from "../providers/UserProviders";
+import { DatabaseUserDataProvider, User } from "../providers/UserProvider";
 
 export class UserRepository {
     readonly databaseUserProvider: DatabaseUserDataProvider;

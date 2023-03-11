@@ -28,7 +28,7 @@ export class AuthenticateUserUseCase extends UseCase<string | null> {
             await this.userRepository.updateUserToken(dbUser.userId, token);
             return token;
         } else {
-            throw new Error("Invalid Request");
+            throw new Error("Wrong password");
         }
     }
 }

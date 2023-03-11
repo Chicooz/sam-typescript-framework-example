@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { UseCase } from "../useCases/UseCase";
 import { UserRepository } from "../repositories/UserRepository";
-import { DatabaseUserDataProvider } from "../providers/UserProviders";
+import { DatabaseUserDataProvider } from "../providers/UserProvider";
 import { PasswordProvider } from "../providers/PasswordProvider";
 import { EnvironmentVariablesProvider } from "../providers/EnvironmentVariablesProvider";
 import { Success, NotAuthorised } from "../http/responses/response";
@@ -22,7 +22,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     try {
         const requestBody: AuthenticateBody = event.body ? JSON.parse(event.body) : {};
         const token = await useCase.init(requestBody).operate();
-        return new Success(token);
+        return new Success({token});
     } catch (e) {
         const error = e as Error;
 

@@ -104,10 +104,13 @@ Resources:
           - src/handlers/authenticate.ts
 
 # contracts
-  addContract:
+  createContract:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/all.handler
+      Handler: src/handlers/createContract.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "Contracts-${EnvironmentType}"
       Events:
         RestAuthGet:
           Type: Api
@@ -117,13 +120,63 @@ Resources:
             Path: "/createContract"
             Method: post
             RestApiId: !Ref ExampleApi
-    # Metadata:
-    #   BuildMethod: esbuild
-    #   BuildProperties:
-    #     Minify: true
-    #     Target: "es2020"
-    #     EntryPoints:
-    #       - src/handlers/addContractr.ts
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - src/handlers/createContract.ts
+
+  getContractIDs:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/getContractIDs.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "Contracts-${EnvironmentType}"
+      Events:
+        RestAuthGet:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: Auth
+            Path: "/getContractIDs"
+            Method: get
+            RestApiId: !Ref ExampleApi
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - src/handlers/getContractIDs.ts
+
+
+  getContract:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/getContract.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "Contracts-${EnvironmentType}"
+      Events:
+        RestAuthGet:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: Auth
+            Path: "/getContract"
+            Method: get
+            RestApiId: !Ref ExampleApi
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - src/handlers/getContract.ts
+
 
   # $default route used as catchall
   CatchAllLambdaFunction:
@@ -174,10 +227,10 @@ Resources:
     Properties:
       TableName: !Sub "Contracts-${EnvironmentType}"
       KeySchema:
-        - AttributeName: contractId
+        - AttributeName: contractID
           KeyType: HASH
       AttributeDefinitions:
-        - AttributeName: contractId
+        - AttributeName: contractID
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       PointInTimeRecoverySpecification:

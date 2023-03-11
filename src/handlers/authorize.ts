@@ -1,7 +1,7 @@
 import { Authoriser, IAuthoriser } from "../authenticate/Authoriser";
 import { Context, APIGatewayAuthorizerCallback, APIGatewayAuthorizerEvent, APIGatewayAuthorizerResult } from "aws-lambda";
 import { UserRepository } from "../repositories/UserRepository";
-import { DatabaseUserDataProvider } from "../providers/UserProviders";
+import { DatabaseUserDataProvider } from "../providers/UserProvider";
 import { EnvironmentVariablesProvider } from "../providers/EnvironmentVariablesProvider";
 export const authoriser = {
     init: (payload: APIGatewayAuthorizerEvent, repository: UserRepository): IAuthoriser => {
