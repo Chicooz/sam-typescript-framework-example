@@ -159,14 +159,6 @@ $ sam build
 
 The AWS SAM CLI installs dependencies that are defined in `package.json`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
-Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
-
-Run functions locally and invoke them with the `sam local invoke` command.
-
-```bash
-$ sam local invoke putItemFunction --event events/event-post-item.json
-$ sam local invoke getAllItemsFunction --event events/event-get-all-items.json
-```
 
 The AWS SAM CLI can also emulate your application's API. Use the `sam local start-api` command to run the API locally on port 3000.
 
@@ -322,43 +314,4 @@ export abstract class MotionStatusProvider {
         return null
     }
 }
-```
-
-## Dependency injection
-A simple enough dependency injection library has not yet been found to supply the Factory's needs
-so at the moment, constructor injection is being used for this. Please ensure all classes have their
-dependencies correctly extracted and injected
-
-## Unit Test Mocks
-A simple mocking library is now being used to simplify unit testing: ts-mockito
-
-AWS DynamoDB Database mocking is being achieved by aws-sdk-client-mock
-
-Below is a simple use case test with its dependencies mocked
-```typescript
-    it("Should return system off state when system not on", async () => {
-        when(userRepository.getUser(userId)).thenResolve(userWithSystemOff)
-        const expectedState = await useCase.operate()
-        expect(expectedState).toEqual(new HouseholdSystemOff())
-    })
-```
-DB Mocking:
-```typescript
-describe("Test user repository", () => {
-    const ddbMock = mockClient(DynamoDBDocumentClient)
-    const userId = "5fb"
-
-    const sut = new UserRepository()
-
-    it("get user builds user ts object", async () => {
-        ddbMock.on(GetCommand).resolves(userObject)
-        const user = await sut.getUser(userId)
-        expect(user).not.toBeNull()
-        expect(user!!.orgId).toEqual(userObject.Item.AerialGroupID)
-        expect(user!!.members.length).toBe(1)
-        expect(user!!.routerMacAddress).toEqual(userObject.Item.Household?.Router.MacAddress)
-        expect(user!!.members[0].name).toEqual("Luiz")
-        expect(user!!.systemSettings.isSensingEnabled).toEqual(true)
-    })
-})
 ```
