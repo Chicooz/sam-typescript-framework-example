@@ -20,6 +20,6 @@ export class CreateContractUseCase extends UseCase<string> {
         if (contractID) {
             return contractID;
         }
-        return '';
+        return "";
     }
 }

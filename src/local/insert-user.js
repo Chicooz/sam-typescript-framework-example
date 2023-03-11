@@ -5,7 +5,7 @@ const passwordUtils = require("./util/password");
 
 const insertUser = async () => {
     const environment = await promptUtils.promptEnvironment();
-    
+
     const username = await promptUtils.promptUser("Please enter the username");
 
     var password = await promptUtils.promptUser("Please enter the password (leave blank to auto-generate):");
@@ -17,11 +17,7 @@ const insertUser = async () => {
     }
     try {
         const tableName = `Users-${environment}`;
-        const userPutData = await userUtils.insertUser(
-            username,
-            password,
-            tableName,
-        );
+        const userPutData = await userUtils.insertUser(username, password, tableName);
         console.log("Success - user inserted", userPutData);
     } catch (err) {
         console.log("Error", err.stack);

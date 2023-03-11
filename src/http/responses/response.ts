@@ -14,9 +14,7 @@ export class ServerError<Type> implements Response<Type | null> {
 
     constructor(e: Error) {
         this.error = e;
-        console.log(
-            `Responding with ${this.statusCode} due to error [${this.error}: ${this.error.message}]`
-        );
+        console.log(`Responding with ${this.statusCode} due to error [${this.error}: ${this.error.message}]`);
         this.body = this.error.message;
     }
 }

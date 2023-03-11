@@ -22,7 +22,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     try {
         const requestBody: AuthenticateBody = event.body ? JSON.parse(event.body) : {};
         const token = await useCase.init(requestBody).operate();
-        return new Success({token});
+        return new Success({ token });
     } catch (e) {
         const error = e as Error;
         return new NotAuthorised(e as Error);

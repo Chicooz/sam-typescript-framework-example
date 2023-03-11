@@ -79,13 +79,13 @@ export class DatabaseUserDataProvider {
             },
             ProjectionExpression: "userId, username, password, authToken",
         };
-        try{
-            const dbResult = (await this.ddb.send(new QueryCommand(params)));
+        try {
+            const dbResult = await this.ddb.send(new QueryCommand(params));
             if (!dbResult || !dbResult?.Items?.length) {
                 throw new Error(`Token: '${token}' not found`);
             }
-            return dbResult.Items[0] as User;    
-        }catch(e){
+            return dbResult.Items[0] as User;
+        } catch (e) {
             const error = e as Error;
             console.log(error.message);
         }

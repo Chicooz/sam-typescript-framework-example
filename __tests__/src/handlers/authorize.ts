@@ -10,7 +10,7 @@ describe("Testing Authorization", () => {
         methodArn: "",
         authorizationToken: "1234",
     };
-    const principalId= "8314138c-ffb3-4b19-963b-b4f4748f817e";
+    const principalId = "8314138c-ffb3-4b19-963b-b4f4748f817e";
     const authoriser: IAuthoriser = mock(Authoriser);
     const context = {
         callbackWaitsForEmptyEventLoop: false,
@@ -57,5 +57,5 @@ describe("Testing Authorization", () => {
         const response = await lambda.handler(event, context, function (err, auth) {
             expect(err).toEqual("Unauthorized");
         });
-    });   
+    });
 });

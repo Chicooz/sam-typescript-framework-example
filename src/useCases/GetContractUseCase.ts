@@ -7,7 +7,7 @@ export class GetContractUseCase extends UseCase<Contract> {
     readonly contractQuery: GetContractQuery;
     readonly contractRepository: ContractRepository;
 
-    constructor( contractQuery:GetContractQuery, contractRepository: ContractRepository) {
+    constructor(contractQuery: GetContractQuery, contractRepository: ContractRepository) {
         super();
         this.contractRepository = contractRepository;
         this.contractQuery = contractQuery;
@@ -15,9 +15,9 @@ export class GetContractUseCase extends UseCase<Contract> {
 
     async operate(): Promise<Contract> {
         const contractID = this.contractQuery.id;
-        if(!contractID){
-            throw new Error("Bad Request")
+        if (!contractID) {
+            throw new Error("Bad Request");
         }
-        return await this.contractRepository.getContract(contractID); 
+        return await this.contractRepository.getContract(contractID);
     }
 }

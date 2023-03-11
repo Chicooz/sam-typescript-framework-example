@@ -21,17 +21,21 @@ export class Authoriser implements IAuthoriser {
         return match[1];
     }
     async userAuthorized(): Promise<string> {
-            const token = await this.getToken();
-            const user = await this.repository.getUserByToken(token);
-            if (!user) {
-                throw new Error("invalid token");
-            }
-            const jwtProvider = new JWTProvider(user.password);
-            const verifiedToken = await jwtProvider.verifySynchronously(token);
-            if(typeof verifiedToken === "string" || verifiedToken.email !== user.username || verifiedToken.userId !== user.userId) {
-                throw new Error("invalid token");
-            }
-            return user.userId;    
+        const token = await this.getToken();
+        const user = await this.repository.getUserByToken(token);
+        if (!user) {
+            throw new Error("invalid token");
+        }
+        const jwtProvider = new JWTProvider(user.password);
+        const verifiedToken = await jwtProvider.verifySynchronously(token);
+        if (
+            typeof verifiedToken === "string" ||
+            verifiedToken.email !== user.username ||
+            verifiedToken.userId !== user.userId
+        ) {
+            throw new Error("invalid token");
+        }
+        return user.userId;
     }
 }
 

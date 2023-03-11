@@ -16,5 +16,5 @@ export class ContractRepository {
     }
     async getContract(contractID: string) {
         return await this.databaseContractProvider.getContract(contractID);
-    }    
+    }
 }

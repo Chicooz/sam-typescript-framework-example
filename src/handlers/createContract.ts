@@ -20,10 +20,10 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     try {
         const requestBody: CreateContractBody = event.body ? JSON.parse(event.body) : {};
         const contractID = await useCase.init(requestBody).operate();
-        return new Success({ContractID: contractID});
+        return new Success({ ContractID: contractID });
     } catch (e) {
         const error = e as Error;
-        console.log( error.message)
+        console.log(error.message);
         return new NotAuthorised(e as Error);
     }
 };

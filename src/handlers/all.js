@@ -3,7 +3,7 @@ exports.handler = async (event, context) => {
         statusCode: 200,
         body: JSON.stringify({
             success: true,
-            user: event?.requestContext?.authorizer?.principalId
+            user: event?.requestContext?.authorizer?.principalId,
         }),
     };
 };

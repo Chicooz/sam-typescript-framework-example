@@ -3,19 +3,13 @@ import {
     DynamoDBDocumentClient,
     PutCommand,
     GetCommand,
-    QueryCommand,
-    UpdateCommand,
-    UpdateCommandInput,
-    PutCommandOutput,
     PutCommandInput,
-    QueryCommandInput,
-    ScanCommandOutput,
     ScanCommandInput,
 } from "@aws-sdk/lib-dynamodb";
 import { CreateContractBody } from "../handlers/createContract";
 import { EnvironmentVariablesProvider } from "./EnvironmentVariablesProvider";
 import crypto from "crypto";
-import { DBContractID } from "../handlers/getContractIDs"
+import { DBContractID } from "../handlers/getContractIDs";
 export class DatabaseContractDataProvider {
     readonly environmentVariablesProvider: EnvironmentVariablesProvider;
     readonly ddb: DynamoDBDocumentClient;
@@ -35,17 +29,17 @@ export class DatabaseContractDataProvider {
         wrapNumbers: false, // false, by default.
     };
 
-    constructor(environmentVariablesProvider: EnvironmentVariablesProvider, tableName?: string | undefined) {
+    constructor(environmentVariablesProvider: EnvironmentVariablesProvider) {
         this.environmentVariablesProvider = environmentVariablesProvider;
         const dynamdb = new DynamoDBClient({});
         this.ddb = DynamoDBDocumentClient.from(dynamdb, {
             marshallOptions: this.marshallOptions,
             unmarshallOptions: this.unmarshallOptions,
         });
-        this.tableName = tableName ?? this.environmentVariablesProvider.getContractsTableName();
+        this.tableName = this.environmentVariablesProvider.getContractsTableName();
     }
     async createContract(contract: CreateContractBody): Promise<string> {
-        const params:PutCommandInput = {
+        const params: PutCommandInput = {
             TableName: this.tableName,
             Item: {
                 userId: contract.userID,
@@ -55,7 +49,7 @@ export class DatabaseContractDataProvider {
             },
         };
         await this.ddb.send(new PutCommand(params));
-        return params.Item?.contractID
+        return params.Item?.contractID;
     }
 
     async getContractsIDs(): Promise<DBContractID[]> {
@@ -64,10 +58,11 @@ export class DatabaseContractDataProvider {
             ProjectionExpression: "contractID",
         };
         const dbResult = await this.ddb.send(new ScanCommand(params));
-            return dbResult.Items as unknown as DBContractID[];
+        console.log(dbResult);
+        return dbResult.Items as unknown as DBContractID[];
     }
 
-    async getContract(id:string): Promise<any> {
+    async getContract(id: string): Promise<any> {
         const params = {
             TableName: this.tableName,
             Key: {

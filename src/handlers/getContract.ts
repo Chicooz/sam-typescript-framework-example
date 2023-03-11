@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { UseCase } from "../useCases/UseCase";
 import { ContractRepository } from "../repositories/ContractRepository";
-import {  Contract, DatabaseContractDataProvider } from "../providers/ContractProvider";
+import { Contract, DatabaseContractDataProvider } from "../providers/ContractProvider";
 import { EnvironmentVariablesProvider } from "../providers/EnvironmentVariablesProvider";
 import { Success, NotAuthorised } from "../http/responses/response";
 
@@ -18,12 +18,11 @@ export const useCase = {
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
-        const contract = await useCase.init((event.queryStringParameters as GetContractQuery)).operate()
+        const contract = await useCase.init(event.queryStringParameters as GetContractQuery).operate();
         return new Success(contract);
-    }
-    catch (e) {
+    } catch (e) {
         const error = e as Error;
-        console.log( error.message)
+        console.log(error.message);
         return new NotAuthorised(e as Error);
     }
 };
@@ -31,4 +30,3 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 export interface GetContractQuery {
     id?: string;
 }
-
