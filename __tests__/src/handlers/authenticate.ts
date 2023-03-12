@@ -8,7 +8,7 @@ import { AuthenticateUserUseCase } from "../../../src/useCases/AuthenticateUseCa
 import { UseCase } from "../../../src/useCases/UseCase";
 import { NotAuthorised, Success } from "../../../src/http/responses/response";
 
-const fakeusecase: UseCase<string | null> = mock(AuthenticateUserUseCase);
+const fakeusecase: UseCase<string> = mock(AuthenticateUserUseCase);
 
 const fakeEvent: APIGatewayProxyEvent = {
     body: null,

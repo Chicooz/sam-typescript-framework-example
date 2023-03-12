@@ -4,7 +4,7 @@ import { AuthenticateBody } from "../handlers/authenticate";
 import { PasswordProvider } from "../providers/PasswordProvider";
 import { JWTProvider } from "../providers/JWTProvider";
 
-export class AuthenticateUserUseCase extends UseCase<string | null> {
+export class AuthenticateUserUseCase extends UseCase<string> {
     readonly user: AuthenticateBody;
     readonly userRepository: UserRepository;
     readonly passwordProvider: PasswordProvider;
@@ -16,7 +16,7 @@ export class AuthenticateUserUseCase extends UseCase<string | null> {
         this.passwordProvider = passwordProvider;
     }
 
-    async operate(): Promise<string | null> {
+    async operate(): Promise<string> {
         if (!this.user || !this.user.username || !this.user.password) {
             throw new Error("Invalid Request");
         }

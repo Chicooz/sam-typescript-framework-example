@@ -9,7 +9,7 @@ import { Success, NotAuthorised } from "../http/responses/response";
 import { AuthenticateUserUseCase } from "../useCases/AuthenticateUseCase";
 
 export const useCase = {
-    init: (user: AuthenticateBody): UseCase<string | null> => {
+    init: (user: AuthenticateBody): UseCase<string> => {
         const envVarProvider: EnvironmentVariablesProvider = new EnvironmentVariablesProvider();
         const databaseUserProvider = new DatabaseUserDataProvider(envVarProvider);
         const userRepo = new UserRepository(databaseUserProvider);
