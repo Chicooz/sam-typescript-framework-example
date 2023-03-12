@@ -113,7 +113,7 @@ $ make deploy-dev
 
 ### Inserting your user
 
-you need to insert user manually to be able to login and use the app usiing: 
+you need to insert user manually to be able to login and use the app using: 
 
 ```bash
 $ make insert-user
