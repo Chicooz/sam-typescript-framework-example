@@ -111,6 +111,16 @@ You can also deploy locally (assuming you have the correct permissions) using:
 $ make deploy-dev
 ```
 
+### Inserting your user
+
+you need to insert user manually to be able to login and use the app usiing: 
+
+```bash
+$ make insert-user
+```
+
+and follow the on screen instructions
+
 ### Production
 
 Deployments to production can be done either via a tag (the preferred method):
