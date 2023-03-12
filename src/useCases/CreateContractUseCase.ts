@@ -13,13 +13,9 @@ export class CreateContractUseCase extends UseCase<string> {
     }
 
     async operate(): Promise<string> {
-        if (!this.contract || !this.contract.contractName || !this.contract.templateID) {
+        if (!this.contract || !this.contract.contractName || !this.contract.templateID || !this.contract.userID) {
             throw new Error("Invalid Request");
         }
-        const contractID = await this.contractRepository.createContract(this.contract);
-        if (contractID) {
-            return contractID;
-        }
-        return "";
+        return await this.contractRepository.createContract(this.contract);
     }
 }

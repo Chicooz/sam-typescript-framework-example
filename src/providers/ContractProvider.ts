@@ -62,7 +62,7 @@ export class DatabaseContractDataProvider {
         return dbResult.Items as unknown as DBContractID[];
     }
 
-    async getContract(id: string): Promise<any> {
+    async getContract(id: string): Promise<Contract> {
         const params = {
             TableName: this.tableName,
             Key: {
