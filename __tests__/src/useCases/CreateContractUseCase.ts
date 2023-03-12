@@ -6,7 +6,7 @@ import { CreateContractBody } from "../../../src/handlers/createContract";
 describe("Test create contract use case", () => {
     const contractRepository: ContractRepository = mock(ContractRepository);
     const fakeContract: CreateContractBody = {
-        userID: "uuid",
+        userId: "uuid",
         contractName: "another string",
         templateID: "uuid",
     };
@@ -24,7 +24,7 @@ describe("Test create contract use case", () => {
 
     it("will throw Invalid Request if provided with bad contract data  ", async () => {
         when(contractRepository.createContract(fakeContract)).thenResolve("fakeContractUUID");
-        fakeContract.userID = undefined;
+        fakeContract.userId = undefined;
         const useCase = new CreateContractUseCase(fakeContract, instance(contractRepository));
         try {
             const response = await useCase.operate();

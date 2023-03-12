@@ -46,9 +46,11 @@ paths:
                   type: string
                 templateID:
                   type: string
+                userId:
+                  type: string
       responses:
         '200':
-          description: The signed JWT
+          description: Contract ID
           content:
             application/json:
               schema:

@@ -42,7 +42,7 @@ export class DatabaseContractDataProvider {
         const params: PutCommandInput = {
             TableName: this.tableName,
             Item: {
-                userId: contract.userID,
+                userId: contract.userId,
                 contractName: contract.contractName,
                 templateID: contract.templateID,
                 contractID: crypto.randomUUID(),

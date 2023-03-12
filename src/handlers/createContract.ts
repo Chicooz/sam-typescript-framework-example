@@ -29,7 +29,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 };
 
 export interface CreateContractBody {
-    userID?: string;
+    userId?: string;
     contractName?: string;
     templateID?: string;
 }
