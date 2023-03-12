@@ -1,7 +1,7 @@
 import { instance, mock, reset, when } from "ts-mockito";
-import {  ContractRepository } from "../../../src/repositories/ContractRepository";
+import { ContractRepository } from "../../../src/repositories/ContractRepository";
 import { GetContractUseCase } from "../../../src/useCases/GetContractUseCase";
-import { GetContractQuery } from "../../../src/handlers/getContract"
+import { GetContractQuery } from "../../../src/handlers/getContract";
 import { Contract } from "../../../src/providers/ContractProvider";
 
 describe("Test get contract use case", () => {
@@ -11,9 +11,9 @@ describe("Test get contract use case", () => {
     };
     const fakeContract: Contract = {
         userId: "uuid",
-        contractName: 'another string',
-        templateID: 'uuid',
-        contractID: 'fakeContractUUID',
+        contractName: "another string",
+        templateID: "uuid",
+        contractID: "fakeContractUUID",
     };
 
     afterEach(() => {
@@ -25,19 +25,15 @@ describe("Test get contract use case", () => {
         const useCase = new GetContractUseCase(fakeContractQuery, instance(contractRepository));
         const response = await useCase.operate();
         expect(response).toEqual(fakeContract);
-
-        
     });
     it("will throw bad request if provided with bad contract id  ", async () => {
         fakeContractQuery.id = undefined;
         const useCase = new GetContractUseCase(fakeContractQuery, instance(contractRepository));
-        try{
+        try {
             const response = await useCase.operate();
-        }catch(e){
+        } catch (e) {
             const error = e as Error;
             expect(error.message).toEqual("Bad Request");
         }
-        
     });
-
 });
