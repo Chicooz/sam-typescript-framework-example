@@ -98,145 +98,46 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/authenticate.ts
 
-# contracts
-  createContract:
-    Type: AWS::Serverless::Function
+  Queue:
+    Type: AWS::SQS::Queue
     Properties:
-      Handler: src/handlers/createContract.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "Contracts-${EnvironmentType}"
-      Events:
-        RestAuthGet:
-          Type: Api
-          Properties:
-            Auth:
-              Authorizer: Auth
-            Path: "/createContract"
-            Method: post
-            RestApiId: !Ref ExampleApi
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/createContract.ts
+      QueueName: !Sub "MyQueue-${EnvironmentType}"
+      MessageRetentionPeriod: 1209600 # 14 days
 
-  getContractIDs:
-    Type: AWS::Serverless::Function
+  SQSAlarm:
+    Type: AWS::CloudWatch::Alarm
     Properties:
-      Handler: src/handlers/getContractIDs.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "Contracts-${EnvironmentType}"
-      Events:
-        RestAuthGet:
-          Type: Api
-          Properties:
-            Auth:
-              Authorizer: Auth
-            Path: "/getContractIDs"
-            Method: get
-            RestApiId: !Ref ExampleApi
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/getContractIDs.ts
+      AlarmName: !Sub "SQSMessageCountAlarm-${EnvironmentType}"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !Ref Queue
+      AlarmActions:
+        - !Ref AlarmSNS
 
-
-  getContract:
-    Type: AWS::Serverless::Function
+  AlarmSNS:
+    Type: AWS::SNS::Topic
     Properties:
-      Handler: src/handlers/getContract.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "Contracts-${EnvironmentType}"
-      Events:
-        RestAuthGet:
-          Type: Api
-          Properties:
-            Auth:
-              Authorizer: Auth
-            Path: "/getContract"
-            Method: get
-            RestApiId: !Ref ExampleApi
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/getContract.ts
+      TopicName: !Sub "SQSAlarmTopic-${EnvironmentType}"
 
-
-  # $default route used as catchall
-  CatchAllLambdaFunction:
-    Type: AWS::Serverless::Function
+  AlarmSubscription:
+    Type: AWS::SNS::Subscription
     Properties:
-      Handler: src/handlers/all.handler
-      Events:
-        RestCatchAll:
-          Type: Api
-          Properties:
-            Path: /{all+}
-            Method: get
-            RestApiId: !Ref ExampleApi
-
-  UsersTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "Users-${EnvironmentType}"
-      KeySchema:
-        - AttributeName: userId
-          KeyType: HASH
-      AttributeDefinitions:
-        - AttributeName: userId
-          AttributeType: S
-        - AttributeName: username
-          AttributeType: S
-        - AttributeName: authToken
-          AttributeType: S
-      GlobalSecondaryIndexes:
-        - IndexName: usernameIndex
-          KeySchema:
-            - AttributeName: username
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-        - IndexName: authTokenIndex
-          KeySchema:
-            - AttributeName: authToken
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-      BillingMode: PAY_PER_REQUEST
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
-
-  ContractsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "Contracts-${EnvironmentType}"
-      KeySchema:
-        - AttributeName: contractID
-          KeyType: HASH
-      AttributeDefinitions:
-        - AttributeName: contractID
-          AttributeType: S
-      BillingMode: PAY_PER_REQUEST
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
+      TopicArn: !Ref AlarmSNS
+      Protocol: email
+      Endpoint: "your-email@example.com" # Replace with your email address
 
 Outputs:
-  RestApiEndpoint:
-    Description: "Rest API endpoint URL"
-    Value: !Sub "https://${ExampleApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType}"
+  QueueUrl:
+    Description: "URL of the created SQS queue"
+    Value: !Ref Queue
+  AlarmTopic:
+    Description: "SNS Topic for SQS alarms"
+    Value: !Ref AlarmSNS
