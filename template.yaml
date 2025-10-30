@@ -171,3 +171,76 @@ Resources:
       Endpoint: !GetAtt MyQueueDLQ.Arn
       Protocol: sqs
       TopicArn: !Ref MyQueue
+
+  NewSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "NewSQSQueue-${EnvironmentType}"
+
+  NewSQSQueueDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "NewSQSQueueDLQ-${EnvironmentType}"
+
+  NewQueueProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/newQueueProcessor.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Timeout: 30
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !Ref NewSQSQueue
+        - SQSPollingPolicy:
+            QueueName: !Ref NewSQSQueue
+      Events:
+        NewQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt NewSQSQueue.Arn
+            BatchSize: 10
+            MaximumBatchingWindowInSeconds: 10
+
+  NewQueueDLQPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: NewQueueDLQPolicy
+      Roles:
+        - !GetAtt NewQueueProcessorRole.Arn
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt NewSQSQueueDLQ.Arn
+
+  NewQueueProcessorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: NewQueueProcessorPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt NewSQSQueue.Arn
+
+  NewQueueDLQSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !GetAtt NewSQSQueueDLQ.Arn
+      Protocol: sqs
+      TopicArn: !Ref NewSQSQueue
