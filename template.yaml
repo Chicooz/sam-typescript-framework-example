@@ -98,30 +98,32 @@ Resources:
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/authenticate.ts
 
-  QueueProcessor:
-    Type: AWS::Serverless::Function
+  Alarms:
+    Type: AWS::CloudWatch::Alarm
     Properties:
-      Handler: src/queueProcessor.handler
-      Runtime: nodejs16.x
-      MemorySize: 512
-      Timeout: 30
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !Sub "MyQueue-${EnvironmentType}"
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/queueProcessor.ts
+      AlarmName: !Sub "${EnvironmentType}-Auth-Errors"
+      MetricName: 4xxError
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref Auth
+      AlarmActions:
+        - !Ref AlarmSNS
+      OKActions:
+        - !Ref AlarmSNS
+      InsufficientDataActions:
+        - !Ref AlarmSNS
 
-  MyQueue:
-    Type: AWS::SQS::Queue
+  AlarmSNS:
+    Type: AWS::SNS::Topic
     Properties:
-      QueueName: !Sub "MyQueue-${EnvironmentType}"
+      DisplayName: "Alarm SNS Topic"
+      Subscription:
+        - Endpoint: "your-email@example.com"
+          Protocol: email
