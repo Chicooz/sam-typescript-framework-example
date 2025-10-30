@@ -236,6 +236,29 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+  SQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyQueue-${EnvironmentType}"
+      MessageRetentionPeriod: 86400 # 1 day
+
+  SQSQueueAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "SQSQueueAlarm-${EnvironmentType}"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !Ref SQSQueue
+      AlarmActions:
+        - !Ref AlarmSNS
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
