@@ -6,6 +6,9 @@ import { EnvironmentVariablesProvider } from "../providers/EnvironmentVariablesP
 import { Success, NotAuthorised } from "../http/responses/response";
 
 import { CreateContractUseCase } from "../useCases/CreateContractUseCase";
+import { SQS } from 'aws-sdk';
+
+const sqs = new SQS();
 
 export const useCase = {
     init: (contract: CreateContractBody): UseCase<string> => {
@@ -20,6 +23,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     try {
         const requestBody: CreateContractBody = event.body ? JSON.parse(event.body) : {};
         const contractID = await useCase.init(requestBody).operate();
+
+        // Send message to SQS
+        await sqs.sendMessage({
+            QueueUrl: process.env.QUEUE_URL, // Ensure this environment variable is set
+            MessageBody: JSON.stringify({ contractID }),
+        }).promise();
+
         return new Success({ ContractID: contractID });
     } catch (e) {
         const error = e as Error;
