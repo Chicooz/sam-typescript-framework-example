@@ -236,6 +236,19 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+  MyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyQueue-${EnvironmentType}"
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt MyDeadLetterQueue.Arn
+        maxReceiveCount: 5
+
+  MyDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyDeadLetterQueue-${EnvironmentType}"
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
