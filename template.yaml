@@ -318,6 +318,80 @@ Resources:
       Protocol: sqs
       TopicArn: !Ref NewAdditionalSQSQueue
 
+  # New SQS and DLQ resources
+  AdditionalSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "AdditionalSQSQueue-${EnvironmentType}"
+
+  AdditionalSQSQueueDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "AdditionalSQSQueueDLQ-${EnvironmentType}"
+
+  AdditionalQueueProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/additionalQueueProcessor.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Timeout: 30
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !Ref AdditionalSQSQueue
+        - SQSPollingPolicy:
+            QueueName: !Ref AdditionalSQSQueue
+      Events:
+        AdditionalQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt AdditionalSQSQueue.Arn
+            BatchSize: 10
+            MaximumBatchingWindowInSeconds: 10
+
+  AdditionalQueueDLQPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AdditionalQueueDLQPolicy
+      Roles:
+        - !GetAtt AdditionalQueueProcessorRole.Arn
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt AdditionalSQSQueueDLQ.Arn
+
+  AdditionalQueueProcessorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AdditionalQueueProcessorPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt AdditionalSQSQueue.Arn
+
+  AdditionalQueueDLQSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !GetAtt AdditionalSQSQueueDLQ.Arn
+      Protocol: sqs
+      TopicArn: !Ref AdditionalSQSQueue
+
 Outputs:
   AuthFunction:
     Description: "Auth Lambda Function ARN"
