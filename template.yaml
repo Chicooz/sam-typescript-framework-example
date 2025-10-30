@@ -119,3 +119,51 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "MyQueue-${EnvironmentType}"
+
+  EventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt QueueProcessor.Arn
+      Enabled: true
+
+  MyQueueDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyQueueDLQ-${EnvironmentType}"
+
+  MyQueueDLQPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: MyQueueDLQPolicy
+      Roles:
+        - !GetAtt QueueProcessorRole.Arn
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt MyQueueDLQ.Arn
+
+Outputs:
+  AuthFunction:
+    Description: "Auth Lambda Function ARN"
+    Value: !GetAtt Auth.Arn
+
+  AuthorizationFunction:
+    Description: "Authorization Lambda Function ARN"
+    Value: !GetAtt Authorization.Arn
+
+  QueueProcessorFunction:
+    Description: "Queue Processor Lambda Function ARN"
+    Value: !GetAtt QueueProcessor.Arn
+
+  MyQueueURL:
+    Description: "URL of the MyQueue"
+    Value: !Ref MyQueue
+
+  MyQueueDLQURL:
+    Description: "URL of the MyQueueDLQ"
+    Value: !Ref MyQueueDLQ
