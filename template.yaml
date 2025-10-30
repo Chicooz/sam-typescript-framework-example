@@ -1,114 +1,19 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description:  Authorized API
-
-Parameters:
-  EnvironmentType:
-    Description: The environment type
-    Type: String
-    Default: Dev
-    AllowedValues:
-      - Dev
-      - Prod
-    ConstraintDescription: Must specify either 'Dev' or 'Prod'. Default is 'Dev'.
-
-Globals:
-  Function:
-    Tracing: Active
-    Runtime: nodejs16.x
-    Architectures:
-      - arm64
-    MemorySize: 512
-    Timeout: 30
-    Environment:
-      Variables:
-        ENVIRONMENT: !Ref EnvironmentType
-  Api:
-    TracingEnabled: True
+Description: SAM Template for the TypeScript Lambda Function
 
 Resources:
-  Auth:
+  QueueProcessorFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: Auth
-      Handler: src/handlers/authorize.handler
-      Runtime: nodejs16.x
-      Timeout: 15
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "Users-${EnvironmentType}"
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/authorize.ts
-
-  LambdaAuthInvokeRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - apigateway.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: "/service-role/"
-      Policies:
-        - PolicyName: AuthInvoke
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource: !GetAtt Auth.Arn
-
-  ExampleApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: !Ref EnvironmentType
-      Auth:
-        Authorizers:
-          Auth:
-            FunctionInvokeRole: !GetAtt LambdaAuthInvokeRole.Arn
-            FunctionArn: !GetAtt Auth.Arn
-            IdentitySource: "$request.header.Authorization"
-            FunctionPayloadType: TOKEN
-
-  # auth
-  Authorization:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/authenticate.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "Users-${EnvironmentType}"
-      Events:
-        RestAuthGet:
-          Type: Api
-          Properties:
-            Path: "/login"
-            Method: post
-            RestApiId: !Ref ExampleApi
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-
-  QueueProcessor:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/queueProcessor.handler
-      Runtime: nodejs16.x
+      Handler: queueProcessor.handler
+      Runtime: nodejs14.x
+      CodeUri: ./src
       Policies:
         - SQSSendMessagePolicy:
-            QueueName: !Sub "MyQueue-${EnvironmentType}"
+            QueueName: !Ref MyQueue
       Events:
-        SQSQueue:
+        MyQueueEvent:
           Type: SQS
           Properties:
             Queue: !Ref MyQueue
@@ -116,4 +21,9 @@ Resources:
   MyQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "MyQueue-${EnvironmentType}"
+      QueueName: MyQueue
+
+Outputs:
+  QueueProcessorFunction:
+    Description: "Queue Processor Lambda Function ARN"
+    Value: !GetAtt QueueProcessorFunction.Arn
