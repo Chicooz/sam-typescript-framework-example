@@ -244,3 +244,85 @@ Resources:
       Endpoint: !GetAtt NewSQSQueueDLQ.Arn
       Protocol: sqs
       TopicArn: !Ref NewSQSQueue
+
+  NewAdditionalSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "NewAdditionalSQSQueue-${EnvironmentType}"
+
+  NewAdditionalSQSQueueDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "NewAdditionalSQSQueueDLQ-${EnvironmentType}"
+
+  NewAdditionalQueueProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/newAdditionalQueueProcessor.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Timeout: 30
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !Ref NewAdditionalSQSQueue
+        - SQSPollingPolicy:
+            QueueName: !Ref NewAdditionalSQSQueue
+      Events:
+        NewAdditionalQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt NewAdditionalSQSQueue.Arn
+            BatchSize: 10
+            MaximumBatchingWindowInSeconds: 10
+
+  NewAdditionalQueueDLQPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: NewAdditionalQueueDLQPolicy
+      Roles:
+        - !GetAtt NewAdditionalQueueProcessorRole.Arn
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt NewAdditionalSQSQueueDLQ.Arn
+
+  NewAdditionalQueueProcessorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: NewAdditionalQueueProcessorPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt NewAdditionalSQSQueue.Arn
+
+  NewAdditionalQueueDLQSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !GetAtt NewAdditionalSQSQueueDLQ.Arn
+      Protocol: sqs
+      TopicArn: !Ref NewAdditionalSQSQueue
+
+Outputs:
+  AuthFunction:
+    Description: "Auth Lambda Function ARN"
+    Value: !GetAtt Auth.Arn
+
+  ExampleApiUrl:
+    Description: "API Gateway endpoint URL for Prod stage for Auth function"
+    Value: !Sub "https://${ExampleApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType}/login"
