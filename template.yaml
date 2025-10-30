@@ -107,7 +107,7 @@ Resources:
   ContractsHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/contracts.handler
+      Handler: src/handlers/contractsHandler.handler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Sub "Contracts-${EnvironmentType}"
