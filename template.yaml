@@ -104,15 +104,15 @@ Resources:
           - src/handlers/authenticate.ts
 
 # contracts
-  createContract:
+  ContractsHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/createContract.handler
+      Handler: src/handlers/contracts.handler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Sub "Contracts-${EnvironmentType}"
       Events:
-        RestAuthGet:
+        CreateContract:
           Type: Api
           Properties:
             Auth:
@@ -120,23 +120,7 @@ Resources:
             Path: "/createContract"
             Method: post
             RestApiId: !Ref ExampleApi
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/createContract.ts
-
-  getContractIDs:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/getContractIDs.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "Contracts-${EnvironmentType}"
-      Events:
-        RestAuthGet:
+        GetContractIDs:
           Type: Api
           Properties:
             Auth:
@@ -144,24 +128,7 @@ Resources:
             Path: "/getContractIDs"
             Method: get
             RestApiId: !Ref ExampleApi
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        EntryPoints:
-          - src/handlers/getContractIDs.ts
-
-
-  getContract:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/getContract.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Sub "Contracts-${EnvironmentType}"
-      Events:
-        RestAuthGet:
+        GetContract:
           Type: Api
           Properties:
             Auth:
@@ -175,8 +142,7 @@ Resources:
         Minify: true
         Target: "es2020"
         EntryPoints:
-          - src/handlers/getContract.ts
-
+          - src/handlers/contracts.ts
 
   # $default route used as catchall
   CatchAllLambdaFunction:
