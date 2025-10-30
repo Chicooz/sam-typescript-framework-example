@@ -271,6 +271,29 @@ Resources:
       FunctionName: !GetAtt Auth.Arn
       Enabled: true
 
+  # CloudWatch Alarms for SQS
+  MyQueueAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "Alarm when the number of messages in the queue exceeds 5"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !Ref MyQueue
+      AlarmActions:
+        - !Ref MyQueueAlarmSNS
+
+  MyQueueAlarmSNS:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: "SNS Topic for SQS Alarm Notifications"
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
