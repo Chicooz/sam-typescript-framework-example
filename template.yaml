@@ -103,16 +103,13 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "MyQueue-${EnvironmentType}"
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt MyDeadLetterQueue.Arn
-        maxReceiveCount: 5
 
-  MyDeadLetterQueue:
+  MyQueueDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "MyDeadLetterQueue-${EnvironmentType}"
+      QueueName: !Sub "MyQueueDLQ-${EnvironmentType}"
 
-  QueueProcessor:
+  MyQueueProcessor:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/queueProcessor.handler
@@ -122,18 +119,48 @@ Resources:
       Policies:
         - SQSSendMessagePolicy:
             QueueName: !Ref MyQueue
-        - SQSQueuePolicy:
+        - SQSPollingPolicy:
             QueueName: !Ref MyQueue
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Principal:
-                    Service: lambda.amazonaws.com
-                  Action: SQS:SendMessage
-                  Resource: !GetAtt MyQueue.Arn
       Events:
-        SQSTrigger:
+        MyQueueEvent:
           Type: SQS
           Properties:
             Queue: !GetAtt MyQueue.Arn
+            BatchSize: 10
+            MaximumBatchingWindowInSeconds: 10
+
+  MyQueueDLQPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: MyQueueDLQPolicy
+      Roles:
+        - !GetAtt MyQueueProcessorRole.Arn
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt MyQueueDLQ.Arn
+
+  MyQueueProcessorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MyQueueProcessorPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt MyQueue.Arn
