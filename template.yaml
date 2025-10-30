@@ -113,7 +113,7 @@ Resources:
         SQSQueue:
           Type: SQS
           Properties:
-            Queue: !GetAtt MyQueue.Arn
+            Queue: !Ref MyQueue
 
   MyQueue:
     Type: AWS::SQS::Queue
