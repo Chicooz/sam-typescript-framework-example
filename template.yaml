@@ -262,6 +262,15 @@ Resources:
             Action: "SQS:SendMessage"
             Resource: !GetAtt MyQueue.Arn
 
+  # Event Source Mapping for Lambda
+  MyQueueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt Auth.Arn
+      Enabled: true
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
