@@ -236,6 +236,21 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+  # New SQS Queue
+  MyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyQueue-${EnvironmentType}"
+
+  # New Event Source Mapping
+  MyQueueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt Auth.Arn
+      Enabled: true
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
