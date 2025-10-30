@@ -103,7 +103,23 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "MyQueue-${EnvironmentType}"
-      MessageRetentionPeriod: 1209600 # 14 days
+      MessageRetentionPeriod: 86400 # 1 day
+
+  QueueProcessingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/queueProcessor.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Timeout: 30
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !Ref Queue
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt Queue.Arn
 
   SQSAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -120,24 +136,19 @@ Resources:
         - Name: QueueName
           Value: !Ref Queue
       AlarmActions:
-        - !Ref AlarmSNS
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
 
-  AlarmSNS:
+  AlarmNotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: !Sub "SQSAlarmTopic-${EnvironmentType}"
-
-  AlarmSubscription:
-    Type: AWS::SNS::Subscription
-    Properties:
-      TopicArn: !Ref AlarmSNS
-      Protocol: email
-      Endpoint: "your-email@example.com" # Replace with your email address
+      TopicName: !Sub "SQSAlarmNotification-${EnvironmentType}"
 
 Outputs:
   QueueUrl:
     Description: "URL of the created SQS queue"
     Value: !Ref Queue
-  AlarmTopic:
-    Description: "SNS Topic for SQS alarms"
-    Value: !Ref AlarmSNS
+  QueueArn:
+    Description: "ARN of the created SQS queue"
+    Value: !GetAtt Queue.Arn
