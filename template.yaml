@@ -145,6 +145,12 @@ Resources:
     Properties:
       TopicName: !Sub "SQSAlarmNotification-${EnvironmentType}"
 
+  LogRetentionPolicy:
+    Type: AWS::Logs::RetentionPolicy
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Auth}"
+      RetentionInDays: 14
+
 Outputs:
   QueueUrl:
     Description: "URL of the created SQS queue"
