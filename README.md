@@ -80,7 +80,7 @@ $ npm run test
 
 ### Github Actions
 
-For GitHub Actions to work you have to provide the DEV DEPLOYMENT VARS for the actions to be completely test your code. 
+For GitHub Actions to work you have to provide the DEV DEPLOYMENT VARS for the actions to completely test your code. 
 You can also emulate the pull request pipeline locally using the *act* command, this can be done by running either:
 
 ```bash
@@ -101,8 +101,8 @@ To build and deploy your application using Github Actions, all you need to do is
 
 ## DLQ Replayer
 
-This project includes a Dead Letter Queue (DLQ) replayer that allows you to reprocess messages that have failed to be processed by your Lambda functions. The replayer can be triggered manually or automatically based on your requirements.
+This application includes a Dead Letter Queue (DLQ) replayer that allows you to reprocess messages that have failed to be processed by your Lambda functions. The replayer can be triggered manually or automatically based on your needs.
 
-To use the DLQ replayer, you can invoke the `queueProcessor.ts` Lambda function with the appropriate event structure containing the messages you want to reprocess.
+To use the DLQ replayer, you can invoke the `queueProcessor.ts` Lambda function with the appropriate event structure that contains the messages you wish to reprocess.
 
-Make sure to monitor the results and adjust your processing logic as necessary to handle any errors that may arise during reprocessing.
+Make sure to monitor the logs and metrics in AWS CloudWatch to ensure that the reprocessing is successful.
