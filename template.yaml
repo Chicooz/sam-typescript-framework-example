@@ -1,18 +1,17 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: SAM Template for Queue Processor Function
+Description: SAM Template for the project
+
 Resources:
+  # Existing resources...
+
   QueueProcessorFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: queueProcessor.handler
+      Handler: src/queueProcessor.handler
       Runtime: nodejs14.x
-      CodeUri: ./src
-      Policies:
-        - SQSSendMessagePolicy:
-            QueueName: !Ref MyQueue
       Events:
-        MyQueueEvent:
+        QueueEvent:
           Type: SQS
           Properties:
             Queue: !GetAtt MyQueue.Arn
@@ -23,6 +22,4 @@ Resources:
       QueueName: MyQueue
 
 Outputs:
-  QueueProcessorFunction:
-    Description: "Queue Processor Lambda Function ARN"
-    Value: !GetAtt QueueProcessorFunction.Arn
+  # Existing outputs...
