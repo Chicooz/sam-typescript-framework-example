@@ -236,6 +236,33 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+  MyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyQueue-${EnvironmentType}"
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt MyDeadLetterQueue.Arn
+        maxReceiveCount: 5
+
+  MyDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyDeadLetterQueue-${EnvironmentType}"
+
+  SQSQueuePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: SQSPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - SQS:SendMessage
+            Resource: !GetAtt MyQueue.Arn
+      Roles:
+        - !GetAtt LambdaAuthInvokeRole.Arn
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
