@@ -325,3 +325,19 @@ Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
     Value: !Sub "https://${ExampleApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType}"
+
+  MyQueueUrl:
+    Description: "URL of the SQS Queue"
+    Value: !Ref MyQueue
+
+  MyDeadLetterQueueUrl:
+    Description: "URL of the SQS Dead Letter Queue"
+    Value: !Ref MyDeadLetterQueue
+
+  MyQueueArn:
+    Description: "ARN of the SQS Queue"
+    Value: !GetAtt MyQueue.Arn
+
+  MyDeadLetterQueueArn:
+    Description: "ARN of the SQS Dead Letter Queue"
+    Value: !GetAtt MyDeadLetterQueue.Arn
