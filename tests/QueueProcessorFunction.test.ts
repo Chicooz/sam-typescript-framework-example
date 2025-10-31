@@ -9,10 +9,10 @@ describe('QueueProcessorFunction', () => {
                 {
                     messageId: '1',
                     receiptHandle: 'abc',
-                    body: 'Test message',
+                    body: 'Hello, world!',
                     attributes: {},
                     messageAttributes: {},
-                    md5OfBody: 'def',
+                    md5OfBody: 'xyz',
                     eventSource: 'aws:sqs',
                     eventSourceARN: 'arn:aws:sqs:us-east-1:123456789012:MyQueue',
                     awsRegion: 'us-east-1'
@@ -22,8 +22,7 @@ describe('QueueProcessorFunction', () => {
 
         const consoleSpy = jest.spyOn(console, 'log');
         await handler(mockEvent);
-        expect(consoleSpy).toHaveBeenCalledWith('Event received:', mockEvent);
-        expect(consoleSpy).toHaveBeenCalledWith('Processing record:', mockEvent.Records[0]);
+        expect(consoleSpy).toHaveBeenCalledWith('Processing message 1: Hello, world!');
     });
 });
 ```
