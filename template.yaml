@@ -1,3 +1,4 @@
+FILE: template.yaml
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description:  Authorized API
@@ -301,11 +302,6 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${Auth}"
       RetentionInDays: 14
 
-Outputs:
-  RestApiEndpoint:
-    Description: "Rest API endpoint URL"
-    Value: !Sub "https://${ExampleApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType}"
-
   # New Event Source Mapping for another Lambda function
   AnotherQueueEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
@@ -338,3 +334,8 @@ Outputs:
         Target: "es2020"
         EntryPoints:
           - src/handlers/anotherHandler.ts
+
+Outputs:
+  RestApiEndpoint:
+    Description: "Rest API endpoint URL"
+    Value: !Sub "https://${ExampleApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType}"
