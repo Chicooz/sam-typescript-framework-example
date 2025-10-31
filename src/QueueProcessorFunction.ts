@@ -1,12 +1,15 @@
 ```typescript
-import { SQSEvent } from 'aws-lambda';
+import { SQSEvent, SQSHandler } from 'aws-lambda';
 
-export async function handler(event: SQSEvent): Promise<void> {
-    console.log("Event received:", event);
-    // Process each message
-    for (const record of event.Records) {
-        console.log("Processing record:", record);
-        // Add your processing logic here
+export const handler: SQSHandler = async (event: SQSEvent) => {
+    try {
+        for (const record of event.Records) {
+            console.log(`Processing message ${record.messageId}: ${record.body}`);
+            // Process message logic here
+        }
+    } catch (error) {
+        console.error(`Error processing messages: ${error}`);
+        throw error;
     }
-}
+};
 ```
