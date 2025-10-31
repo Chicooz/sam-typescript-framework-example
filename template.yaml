@@ -1,4 +1,3 @@
-FILE: template.yaml
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description:  Authorized API
@@ -322,6 +321,14 @@ Resources:
         EntryPoints:
           - src/handlers/anotherHandler.ts
 
+  NewQueueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt AnotherLambdaFunction.Arn
+      Enabled: true
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
@@ -342,11 +349,3 @@ Outputs:
   MyDeadLetterQueueArn:
     Description: "ARN of the SQS Dead Letter Queue"
     Value: !GetAtt MyDeadLetterQueue.Arn
-
-  NewQueueEventSourceMapping:
-    Type: AWS::Lambda::EventSourceMapping
-    Properties:
-      BatchSize: 10
-      EventSourceArn: !GetAtt MyQueue.Arn
-      FunctionName: !GetAtt AnotherLambdaFunction.Arn
-      Enabled: true
