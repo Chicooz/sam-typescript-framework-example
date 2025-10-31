@@ -1,4 +1,3 @@
-FILE: src/test.ts
 // Existing content preserved
 
 // New test code added below
@@ -41,6 +40,43 @@ describe('Additional Queue Processor Tests', () => {
       Records: [
         {
           body: 'Malformed message',
+        },
+      ],
+    };
+
+    const result = await queueProcessorHandler(event);
+
+    expect(result).toBeDefined();
+    // Add more assertions as needed
+  });
+});
+
+// New test cases for additional scenarios
+describe('Edge Case Queue Processor Tests', () => {
+  it('should handle large payloads', async () => {
+    const largeMessage = 'x'.repeat(256 * 1024); // 256 KB message
+    const event = {
+      Records: [
+        {
+          body: JSON.stringify({ message: largeMessage }),
+        },
+      ],
+    };
+
+    const result = await queueProcessorHandler(event);
+
+    expect(result).toBeDefined();
+    // Add more assertions as needed
+  });
+
+  it('should handle multiple records', async () => {
+    const event = {
+      Records: [
+        {
+          body: JSON.stringify({ message: 'Message 1' }),
+        },
+        {
+          body: JSON.stringify({ message: 'Message 2' }),
         },
       ],
     };
