@@ -1,4 +1,3 @@
-FILE: template.yaml
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description:  Authorized API
@@ -81,7 +80,6 @@ Resources:
             IdentitySource: "$request.header.Authorization"
             FunctionPayloadType: TOKEN
 
-  # auth
   Authorization:
     Type: AWS::Serverless::Function
     Properties:
@@ -104,7 +102,6 @@ Resources:
         EntryPoints:
           - src/handlers/authenticate.ts
 
-# contracts
   createContract:
     Type: AWS::Serverless::Function
     Properties:
@@ -153,7 +150,6 @@ Resources:
         EntryPoints:
           - src/handlers/getContractIDs.ts
 
-
   getContract:
     Type: AWS::Serverless::Function
     Properties:
@@ -178,8 +174,6 @@ Resources:
         EntryPoints:
           - src/handlers/getContract.ts
 
-
-  # $default route used as catchall
   CatchAllLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -237,19 +231,16 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
-  # SQS Queue
   MyQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "MyQueue-${EnvironmentType}"
 
-  # Dead Letter Queue
   MyDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub "MyDeadLetterQueue-${EnvironmentType}"
 
-  # SQS Queue Policy
   MyQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
@@ -263,7 +254,6 @@ Resources:
             Action: "SQS:SendMessage"
             Resource: !GetAtt MyQueue.Arn
 
-  # Event Source Mapping for Lambda
   MyQueueEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
@@ -272,7 +262,6 @@ Resources:
       FunctionName: !GetAtt Auth.Arn
       Enabled: true
 
-  # CloudWatch Alarms for SQS
   MyQueueAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -295,14 +284,12 @@ Resources:
     Properties:
       DisplayName: "SNS Topic for SQS Alarm Notifications"
 
-  # Log Retention Policy
   MyQueueLogRetention:
     Type: AWS::Logs::RetentionPolicy
     Properties:
       LogGroupName: !Sub "/aws/lambda/${Auth}"
       RetentionInDays: 14
 
-  # New Event Source Mapping for another Lambda function
   AnotherQueueEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
@@ -311,7 +298,6 @@ Resources:
       FunctionName: !GetAtt AnotherLambdaFunction.Arn
       Enabled: true
 
-  # New Lambda Function
   AnotherLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
