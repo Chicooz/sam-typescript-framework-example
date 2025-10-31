@@ -305,3 +305,36 @@ Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
     Value: !Sub "https://${ExampleApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType}"
+
+  # New Event Source Mapping for another Lambda function
+  AnotherQueueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 5
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt AnotherLambdaFunction.Arn
+      Enabled: true
+
+  # New Lambda Function
+  AnotherLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/anotherHandler.handler
+      Runtime: nodejs16.x
+      MemorySize: 128
+      Timeout: 10
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "AnotherTable-${EnvironmentType}"
+      Events:
+        AnotherEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MyQueue.Arn
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - src/handlers/anotherHandler.ts
