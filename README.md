@@ -280,7 +280,7 @@ export const handler = async (event: Event): Promise<Response<T>> => {
   the userId = (event.pathParameters as UserPathParameters).userId
 
   try {
-    const body: T = await useCase.init(userId).operate()
+    the body: T = await useCase.init(userId).operate()
     return new Success(body)
   } catch (e) {
     return new ServerError(e as Error)
@@ -364,6 +364,7 @@ This will initiate the replay of messages from the specified DLQ.
 - Monitor the logs for any errors that may occur during the replay process.
 
 This utility is a helpful tool for debugging and ensuring that failed messages can be retried without manual intervention.
+... (truncated)
 ... (truncated)
 ... (truncated)
 ... (truncated)
