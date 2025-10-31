@@ -87,3 +87,36 @@ describe('Edge Case Queue Processor Tests', () => {
     // Add more assertions as needed
   });
 });
+
+// New test cases addressing review feedback
+describe('Review Feedback Queue Processor Tests', () => {
+  it('should handle missing body in event record', async () => {
+    const event = {
+      Records: [
+        {
+          // Missing body
+        },
+      ],
+    };
+
+    const result = await queueProcessorHandler(event);
+
+    expect(result).toBeDefined();
+    // Add more assertions as needed
+  });
+
+  it('should handle non-JSON body in event record', async () => {
+    const event = {
+      Records: [
+        {
+          body: 'Non-JSON string',
+        },
+      ],
+    };
+
+    const result = await queueProcessorHandler(event);
+
+    expect(result).toBeDefined();
+    // Add more assertions as needed
+  });
+});
