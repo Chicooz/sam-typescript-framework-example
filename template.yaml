@@ -80,7 +80,6 @@ Resources:
             IdentitySource: "$request.header.Authorization"
             FunctionPayloadType: TOKEN
 
-  # auth
   Authorization:
     Type: AWS::Serverless::Function
     Properties:
@@ -103,7 +102,6 @@ Resources:
         EntryPoints:
           - src/handlers/authenticate.ts
 
-# contracts
   createContract:
     Type: AWS::Serverless::Function
     Properties:
@@ -152,7 +150,6 @@ Resources:
         EntryPoints:
           - src/handlers/getContractIDs.ts
 
-
   getContract:
     Type: AWS::Serverless::Function
     Properties:
@@ -177,8 +174,6 @@ Resources:
         EntryPoints:
           - src/handlers/getContract.ts
 
-
-  # $default route used as catchall
   CatchAllLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -236,7 +231,121 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+  MyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyQueue-${EnvironmentType}"
+
+  MyDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "MyDeadLetterQueue-${EnvironmentType}"
+
+  MyQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref MyQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "SQS:SendMessage"
+            Resource: !GetAtt MyQueue.Arn
+
+  MyQueueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt Auth.Arn
+      Enabled: true
+
+  MyQueueAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "Alarm when the number of messages in the queue exceeds 5"
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !Ref MyQueue
+      AlarmActions:
+        - !Ref MyQueueAlarmSNS
+
+  MyQueueAlarmSNS:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: "SNS Topic for SQS Alarm Notifications"
+
+  MyQueueLogRetention:
+    Type: AWS::Logs::RetentionPolicy
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Auth}"
+      RetentionInDays: 14
+
+  AnotherQueueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 5
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt AnotherLambdaFunction.Arn
+      Enabled: true
+
+  AnotherLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/anotherHandler.handler
+      Runtime: nodejs16.x
+      MemorySize: 128
+      Timeout: 10
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Sub "AnotherTable-${EnvironmentType}"
+      Events:
+        AnotherEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MyQueue.Arn
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        EntryPoints:
+          - src/handlers/anotherHandler.ts
+
+  NewQueueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      EventSourceArn: !GetAtt MyQueue.Arn
+      FunctionName: !GetAtt AnotherLambdaFunction.Arn
+      Enabled: true
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
     Value: !Sub "https://${ExampleApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType}"
+
+  MyQueueUrl:
+    Description: "URL of the SQS Queue"
+    Value: !Ref MyQueue
+
+  MyDeadLetterQueueUrl:
+    Description: "URL of the SQS Dead Letter Queue"
+    Value: !Ref MyDeadLetterQueue
+
+  MyQueueArn:
+    Description: "ARN of the SQS Queue"
+    Value: !GetAtt MyQueue.Arn
+
+  MyDeadLetterQueueArn:
+    Description: "ARN of the SQS Dead Letter Queue"
+    Value: !GetAtt MyDeadLetterQueue.Arn

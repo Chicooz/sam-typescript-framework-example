@@ -277,10 +277,10 @@ The sole responsibility here is to produce a HTTP response, no additional logic 
 ```typescript
 export const handler = async (event: Event): Promise<Response<T>> => {
 
-  const userId = (event.pathParameters as UserPathParameters).userId
+  the userId = (event.pathParameters as UserPathParameters).userId
 
   try {
-    const body: T = await useCase.init(userId).operate()
+    the body: T = await useCase.init(userId).operate()
     return new Success(body)
   } catch (e) {
     return new ServerError(e as Error)
@@ -325,3 +325,54 @@ export abstract class MotionStatusProvider {
     }
 }
 ```
+... (truncated)
+
+## DLQ Replayer
+
+To facilitate the replay of messages from the dead-letter queue (DLQ), a new utility has been added. This utility allows you to replay messages that have failed processing in your Lambda functions. 
+
+### Usage
+
+To use the DLQ replayer, you can invoke it with the following command:
+
+```bash
+$ node src/utils/dlqReplayer.js --queue-url <YourDLQUrl>
+```
+
+This command will fetch messages from the specified dead-letter queue and attempt to reprocess them.
+
+### Implementation
+
+The DLQ replayer is implemented in the `src/utils/dlqReplayer.js` file. Ensure that you have the necessary permissions to access the DLQ and that your AWS credentials are correctly configured.
+
+### Example
+
+Here is an example of how to use the DLQ replayer in your application:
+
+```javascript
+const { DLQReplayer } = require('./utils/dlqReplayer');
+
+const replayer = new DLQReplayer('<YourDLQUrl>');
+replayer.replayMessages();
+```
+
+This will initiate the replay of messages from the specified DLQ.
+
+### Important Notes
+
+- Ensure that the messages in the DLQ are valid and can be processed by your Lambda function.
+- Monitor the logs for any errors that may occur during the replay process.
+
+This utility is a helpful tool for debugging and ensuring that failed messages can be retried without manual intervention.
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
+... (truncated)
