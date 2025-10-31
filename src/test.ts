@@ -1,4 +1,3 @@
-FILE: src/test.ts
 // Existing content preserved
 
 // New test code added below
@@ -12,6 +11,35 @@ describe('Queue Processor Tests', () => {
       Records: [
         {
           body: JSON.stringify({ message: 'Test message' }),
+        },
+      ],
+    };
+
+    const result = await queueProcessorHandler(event);
+
+    expect(result).toBeDefined();
+    // Add more assertions as needed
+  });
+});
+
+// Additional test cases can be added here
+describe('Additional Queue Processor Tests', () => {
+  it('should handle empty event records', async () => {
+    const event = {
+      Records: [],
+    };
+
+    const result = await queueProcessorHandler(event);
+
+    expect(result).toBeDefined();
+    // Add more assertions as needed
+  });
+
+  it('should handle malformed event records', async () => {
+    const event = {
+      Records: [
+        {
+          body: 'Malformed message',
         },
       ],
     };
