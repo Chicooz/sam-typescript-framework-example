@@ -1,4 +1,3 @@
-FILE: src/test.ts
 // Existing content preserved
 
 // New test code added below
