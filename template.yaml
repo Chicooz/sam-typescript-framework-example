@@ -294,6 +294,13 @@ Resources:
     Properties:
       DisplayName: "SNS Topic for SQS Alarm Notifications"
 
+  # Log Retention Policy
+  MyQueueLogRetention:
+    Type: AWS::Logs::RetentionPolicy
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Auth}"
+      RetentionInDays: 14
+
 Outputs:
   RestApiEndpoint:
     Description: "Rest API endpoint URL"
