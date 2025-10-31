@@ -277,7 +277,7 @@ The sole responsibility here is to produce a HTTP response, no additional logic 
 ```typescript
 export const handler = async (event: Event): Promise<Response<T>> => {
 
-  const userId = (event.pathParameters as UserPathParameters).userId
+  the userId = (event.pathParameters as UserPathParameters).userId
 
   try {
     const body: T = await useCase.init(userId).operate()
@@ -364,6 +364,7 @@ This will initiate the replay of messages from the specified DLQ.
 - Monitor the logs for any errors that may occur during the replay process.
 
 This utility is a helpful tool for debugging and ensuring that failed messages can be retried without manual intervention.
+... (truncated)
 ... (truncated)
 ... (truncated)
 ... (truncated)
